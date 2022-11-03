@@ -67,7 +67,7 @@ def berichtAchterlaten():
     }
     stationsNaam = stations[random.randint(1,40)]
     tijdNu = datetime.datetime.today()
-    datum = tijdNu.strftime("%d-%m-%Y")
+    datum = tijdNu.strftime("%Y-%m-%d")
     tijd = tijdNu.strftime("%T")
     berichtAppend = [naam, bericht, datum, tijd, stationsNaam]
     writer.writerow(berichtAppend)
