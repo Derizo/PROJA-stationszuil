@@ -27,7 +27,15 @@ Hoogstwaarschijnlijk is dit 'email_validator' of 'psycopg2', deze kan je install
     curs = connection.cursor()
 
     try:
-        curs.execute("""CREATE TABLE Bericht
+        curs.execute("""CREATE TABLE Moderator
+        (
+        	email_adres VARCHAR(345) PRIMARY KEY,
+        	voornaam VARCHAR(50) NOT NULL,
+        	tussenvoegsel VARCHAR(50),
+        	achternaam VARCHAR(51) NOT NULL
+        );
+
+        CREATE TABLE Bericht
 (
 	berichtnr SERIAL PRIMARY KEY ,
 	naam VARCHAR(30) NOT NULL,
@@ -37,22 +45,18 @@ Hoogstwaarschijnlijk is dit 'email_validator' of 'psycopg2', deze kan je install
 	station VARCHAR(33) NOT NULL,
 	status VARCHAR(11) NOT NULL,
 	datum_beoordeling DATE NOT NULL,
-	tijd_beoordeling TIME NOT NULL
+	tijd_beoordeling TIME NOT NULL,
+    moderator_email VARCHAR(345) NOT NULL,
+    FOREIGN KEY(moderator_email) REFERENCES Moderator(email_adres)
 );
 
-CREATE TABLE Moderator
-(
-	email_adres VARCHAR(345) PRIMARY KEY,
-	voornaam VARCHAR(50) NOT NULL,
-	tussenvoegsel VARCHAR(50),
-	achternaam VARCHAR(51) NOT NULL
-);""")
+""")
     except psycopg2.errors.DuplicateTable:
         pass
 
     while True:
         try:
-            email = input("Voer jouw email adres in: ")
+            email = str(input("Voer jouw email adres in: "))
             validate_email(email, check_deliverability=False)
             break
         except EmailNotValidError:
@@ -73,7 +77,7 @@ CREATE TABLE Moderator
     counter = 0
     while True:
         f = open("berichtDataBase.csv", "r")
-        comment = f.readline().replace('"','').replace('\n','')
+        comment = f.readline().replace('\n','')
         if comment == '':
             print("Er zijn geen comments voor jou om te keuren, moderator. Kom later terug!")
             sleep(2)
@@ -105,9 +109,9 @@ CREATE TABLE Moderator
         datumModeratie = tijdNu.strftime("%Y-%m-%d")
         counter += 1
 
-        curs.execute("""INSERT INTO Bericht(naam,bericht,datum,tijd,station,status,datum_beoordeling,tijd_beoordeling)
-            VALUES(%s,%s,%s,%s,%s,%s,%s,%s)
-        """,[naam,bericht,datum,tijd,station,status,datumModeratie,tijdModeratie])
+        curs.execute("""INSERT INTO Bericht(naam,bericht,datum,tijd,station,status,datum_beoordeling,tijd_beoordeling,moderator_email)
+            VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """,[naam,bericht,datum,tijd,station,status,datumModeratie,tijdModeratie,email])
 
         restOfFile = f.readlines()
         f.close()
